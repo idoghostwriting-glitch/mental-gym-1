@@ -1,0 +1,15 @@
+# Mental Gymnasium — issue reader on Netlify
+
+[build]
+  publish = "."
+
+# Path-style links (…/mental-gym) land on the reader at this site's root
+[[redirects]]
+  from = "/mental-gym"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/mental-gym/*"
+  to = "/"
+  status = 301

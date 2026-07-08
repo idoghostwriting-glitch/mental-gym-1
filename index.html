@@ -99,6 +99,34 @@ body{background:var(--night);color:var(--ink-cream);font-family:var(--serif);fon
 .rnav button:hover{border-color:var(--gold);color:var(--gold-bright)}
 .rnav .hint{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--dim2);margin-left:auto}
 .rnav .goc{border-color:var(--gold);color:var(--gold-bright)}
+
+/* ============ phone / small-screen layout ============ */
+@media (max-width:820px),(max-height:520px) and (orientation:landscape){
+  html,body{height:auto}
+  body{overflow-y:auto;overflow-x:hidden}
+  #topbar{padding:0 14px;gap:10px}
+  #topbar .brand{font-size:10.5px}
+  .tabbtn{padding:7px 12px;font-size:11px}
+  #view-reader{position:static;inset:auto;height:auto;min-height:100vh;overflow:visible;display:block;padding:76px 16px 44px}
+  #stagewrap{width:auto!important;height:auto!important;margin:0}
+  #stage{position:static;width:auto;height:auto;transform:none!important;background:none}
+  #stage .grain{display:none}
+  .stage-grid{position:static;inset:auto;display:flex;flex-direction:column;gap:36px;padding:0}
+  .sg-dev{order:1;width:100%;max-width:520px;margin:0 auto}
+  .sg-left{order:2}
+  .sg-right{order:3}
+  .sg-left,.sg-right{justify-content:flex-start;padding:0}
+  /* fluid kindle — same 780:1072 device body and 732:976 e-ink screen geometry at any width */
+  .kindle{width:100%;height:auto;aspect-ratio:780/1072;margin:0 auto;padding:3.077% 3.077% 0;border-radius:3.33%/2.43%}
+  .screen{width:100%;height:auto;aspect-ratio:732/976}
+  .kindle:after{font-size:clamp(12px,3.5vw,18px);bottom:1.5%}
+  .devcap{position:static;transform:none;text-align:center;margin-top:16px;white-space:normal;line-height:1.6}
+  .sg-left h1{font-size:clamp(34px,10.5vw,52px)}
+  .sg-left .meta{font-size:12px}
+  .toc-row{padding:10px 8px}
+  .rnav{flex-wrap:wrap;gap:8px}
+  .rnav .hint{margin-left:auto}
+}
 </style>
 </head>
 <body>
@@ -125,10 +153,10 @@ body{background:var(--night);color:var(--ink-cream);font-family:var(--serif);fon
         <div class="edition">printed once · numbered by hand · A5 · 20 pages · english</div>
         <div class="rule"></div>
         <div class="clabel">contents — no titles, first lines only</div>
-        <button class="toc-row" onclick="show(3)"><span class="n">1</span><span class="fl">&ldquo;What could it be? What is it about?&hellip;&rdquo;</span><span class="pg">p.3</span></button>
-        <button class="toc-row" onclick="show(6)"><span class="n">2</span><span class="fl">&ldquo;To Paradise, I won&rsquo;t be there&hellip;&rdquo;</span><span class="pg">p.6</span></button>
-        <button class="toc-row" onclick="show(8)"><span class="n">3</span><span class="fl">&ldquo;Before closing your eyes&hellip;&rdquo;</span><span class="pg">p.8</span></button>
-        <button class="toc-row" onclick="show(15)"><span class="n">4</span><span class="fl">&ldquo;It&rsquo;s the perfectionism&hellip;&rdquo;</span><span class="pg">p.15</span></button>
+        <button class="toc-row" onclick="goc(3)"><span class="n">1</span><span class="fl">&ldquo;What could it be? What is it about?&hellip;&rdquo;</span><span class="pg">p.3</span></button>
+        <button class="toc-row" onclick="goc(6)"><span class="n">2</span><span class="fl">&ldquo;To Paradise, I won&rsquo;t be there&hellip;&rdquo;</span><span class="pg">p.6</span></button>
+        <button class="toc-row" onclick="goc(8)"><span class="n">3</span><span class="fl">&ldquo;Before closing your eyes&hellip;&rdquo;</span><span class="pg">p.8</span></button>
+        <button class="toc-row" onclick="goc(15)"><span class="n">4</span><span class="fl">&ldquo;It&rsquo;s the perfectionism&hellip;&rdquo;</span><span class="pg">p.15</span></button>
         <div class="tag">&ldquo;The mind has a gym. This is the equipment.&rdquo;</div>
       </div>
       <div class="sg-dev">
@@ -184,20 +212,47 @@ document.addEventListener('keydown',e=>{
 /* thumbnails */
 const tw=document.getElementById('thumbs');
 PAGES.forEach((src,i)=>{
-  const b=document.createElement('button'); b.className='thumb'; b.onclick=()=>show(i+1);
+  const b=document.createElement('button'); b.className='thumb'; b.onclick=()=>goc(i+1);
   const im=document.createElement('img'); im.src=src; im.alt='p.'+(i+1); im.loading='lazy';
   const s=document.createElement('span'); s.className='tn'; s.textContent=i+1;
   b.append(im,s); tw.append(b);
 });
 
-/* ---------- stage scaling (1920x1200 fixed ratio) ---------- */
+/* ---------- stage scaling (1920x1200 fixed ratio, desktop) / flow layout (phone) ---------- */
+const mqPhone=matchMedia('(max-width:820px),(max-height:520px) and (orientation:landscape)');
 function fit(){
+  const stage=document.getElementById('stage'), wrap=document.getElementById('stagewrap');
+  if(mqPhone.matches){stage.style.transform='';wrap.style.width='';wrap.style.height='';return;}
   const s=Math.min(innerWidth/1920, (innerHeight-56)/1200, 1.25);
-  document.getElementById('stage').style.transform=`scale(${s})`;
-  const wrap=document.getElementById('stagewrap');
+  stage.style.transform=`scale(${s})`;
   wrap.style.width=(1920*s)+'px'; wrap.style.height=(1200*s)+'px';
 }
 addEventListener('resize',fit);
+if(mqPhone.addEventListener){mqPhone.addEventListener('change',fit)}else if(mqPhone.addListener){mqPhone.addListener(fit)}
+
+/* contents / thumbnail jump: bring the reader back into view on phones */
+function goc(n){
+  show(n);
+  if(mqPhone.matches){
+    const k=document.querySelector('.kindle');
+    scrollTo({top:k.getBoundingClientRect().top+scrollY-70,behavior:'smooth'});
+  }
+}
+
+/* touch: swipe left/right on the page to turn */
+let _tx=null,_ty=null;
+scr.addEventListener('touchstart',e=>{_tx=e.touches[0].clientX;_ty=e.touches[0].clientY},{passive:true});
+scr.addEventListener('touchend',e=>{
+  if(_tx===null)return;
+  const dx=e.changedTouches[0].clientX-_tx, dy=e.changedTouches[0].clientY-_ty;
+  if(Math.abs(dx)>44 && Math.abs(dx)>Math.abs(dy)*1.5) turn(dx<0?1:-1);
+  _tx=_ty=null;
+},{passive:true});
+
+/* hint wording for touch devices */
+if(matchMedia('(pointer:coarse)').matches){
+  const h=document.querySelector('.rnav .hint'); if(h) h.textContent='swipe or tap page edges';
+}
 
 /* init */
 show(1); fit();

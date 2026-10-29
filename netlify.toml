@@ -3,7 +3,7 @@
 [build]
   publish = "."
 
-# Path-style links (…/mental-gym) land on the reader at this site's root
+# Path-style links (…/mental-gym, …/mentalgym) land on the reader at this site's root
 [[redirects]]
   from = "/mental-gym"
   to = "/"
@@ -11,5 +11,15 @@
 
 [[redirects]]
   from = "/mental-gym/*"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/mentalgym"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/mentalgym/*"
   to = "/"
   status = 301
